@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UFO Astronomy | Viladecans 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        :root {
+            --brand-blue: #3b82f6;
+            --brand-dark: #020617;
+        }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            scroll-behavior: smooth;
+            background-color: var(--brand-dark);
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .floating-element { animation: float 6s ease-in-out infinite; }
+
+        .hero-viewport {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            text-align: center;
+            padding: 120px 20px;
+        }
+
+        .bg-cosmos {
+            background-image: linear-gradient(to bottom, rgba(2, 6, 23, 0.7), rgba(2, 6, 23, 1)), 
+                              url('https://images.unsplash.com/photo-1464802686167-b939a6910659?auto=format&fit=crop&w=1920&q=80');
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+        }
+
+        .text-gradient {
+            background: linear-gradient(180deg, #fff 40%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-premium {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-premium:hover {
+            border-color: var(--brand-blue);
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-5px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(15px);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal.active { display: flex; }
+
+        #cookie-banner {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            width: 90%;
+            max-width: 600px;
+            display: flex;
+            transition: opacity 0.5s ease;
+        }
+
+        .calendar-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .calendar-day {
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 6px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .calendar-day:hover {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: var(--brand-blue);
+            transform: scale(1.05);
+        }
+
+        .calendar-day.empty { border: none; background: transparent; cursor: default; }
+        .calendar-day.empty:hover { transform: none; }
+
+        .calendar-day span.num { font-weight: 800; font-size: 1rem; }
+        .calendar-day span.act { font-size: 0.55rem; text-transform: uppercase; font-weight: 600; color: #60a5fa; margin-top: 2px; text-align: center; line-height: 1.1; }
+
+        input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 14px;
+            width: 100%;
+            outline: none;
+            transition: all 0.3s;
+        }
+        input:focus { border-color: var(--brand-blue); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
+
+        .activity-card-img {
+            height: 200px;
+            width: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.3); border-radius: 10px; }
+    </style>
+</head>
+<body class="overflow-hidden">
+
+    <!-- Banner Cookies -->
+    <div id="cookie-banner" class="glass-premium p-8 rounded-[2.5rem] border-blue-500/40 flex flex-col md:flex-row items-center gap-6 shadow-2xl">
+        <div class="text-center md:text-left flex-1">
+            <h4 class="font-bold text-lg mb-1">Privacitat i Cookies 🍪</h4>
+            <p class="text-slate-400 text-xs leading-relaxed">Utilitzem cookies pròpies i de tercers per millorar la teva experiència i analitzar el trànsit del nostre observatori digital.</p>
+        </div>
+        <button onclick="acceptCookies()" class="bg-white text-black px-8 py-3 rounded-xl font-bold text-sm hover:bg-blue-50 transition-colors">Acceptar</button>
+    </div>
+
+    <!-- Navegación -->
+    <nav class="fixed w-full z-[100] bg-slate-950/60 backdrop-blur-2xl border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3 group cursor-pointer" onclick="window.scrollTo(0,0)">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30">
+                    <span class="text-white font-black text-xl text-center">U</span>
+                </div>
+                <span class="font-bold text-xl tracking-tighter uppercase">UFO Astronomy</span>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <a href="#experiencia" class="hover:text-white transition-colors py-2">Equips</a>
+                <a href="#activitats-destacades" class="hover:text-white transition-colors py-2">Activitats</a>
+                <a href="#membresia" class="hover:text-white transition-colors py-2">Plans</a>
+                <button onclick="openModal('info-modal')" class="hover:text-white transition-colors py-2 uppercase tracking-widest">Informació</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="hero-viewport">
+        <div class="bg-cosmos"></div>
+        <div class="max-w-5xl mx-auto relative z-10" data-aos="fade-up">
+            <span class="inline-block py-2 px-6 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black tracking-[0.4em] uppercase mb-8">Viladecans Observatory 2026</span>
+            <h1 class="text-6xl md:text-[100px] font-extrabold leading-[0.9] tracking-tighter text-gradient mb-8">Explora el Cosmos.</h1>
+            <p class="text-lg md:text-2xl text-slate-300 font-medium max-w-3xl mx-auto leading-relaxed mb-12 opacity-90">Comunitat astronòmica professional al Baix Llobregat. Tecnologia d'última generació per a l'observació del cel profund.</p>
+            <div class="flex flex-col md:flex-row gap-6 justify-center items-center">
+                <button onclick="openModal('calendar-modal')" class="px-12 py-6 bg-blue-600 text-white font-black rounded-2xl text-lg hover:bg-blue-500 transition-all shadow-2xl hover:scale-105 active:scale-95">RESERVA ARA 2026</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Actividades Destacadas -->
+    <section id="activitats-destacades" class="py-32 bg-slate-950">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-20" data-aos="fade-up">
+                <h2 class="text-5xl font-black mb-6">Activitats <span class="text-blue-500">Destacades</span></h2>
+                <p class="text-slate-400 text-xl max-w-2xl mx-auto">Experiències immersives per a tots els nivells.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="glass-premium p-6 rounded-[2.5rem]" data-aos="fade-up" data-aos-delay="100">
+                    <img src="https://images.unsplash.com/photo-1543722530-d2c3201371e7?auto=format&fit=crop&w=600&q=80" class="activity-card-img mb-6" alt="Astrofotografia">
+                    <h4 class="text-xl font-bold mb-3 text-white text-center">Marató d'Astrofotografia</h4>
+                    <p class="text-slate-500 text-sm leading-relaxed text-center">Nits senceres capturant nebuloses a milions d'anys llum amb càmeres refrigerades.</p>
+                </div>
+                <div class="glass-premium p-6 rounded-[2.5rem]" data-aos="fade-up" data-aos-delay="200">
+                    <img src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=600&q=80" class="activity-card-img mb-6" alt="Planetes">
+                    <h4 class="text-xl font-bold mb-3 text-white text-center">Observació Planetària</h4>
+                    <p class="text-slate-500 text-sm leading-relaxed text-center">Visions nítides de Júpiter i Saturn utilitzant els nostres telescopis de gran obertura.</p>
+                </div>
+                <div class="glass-premium p-6 rounded-[2.5rem]" data-aos="fade-up" data-aos-delay="300">
+                    <img src="https://images.unsplash.com/photo-1532667449560-72a95c8d381b?auto=format&fit=crop&w=600&q=80" class="activity-card-img mb-6" alt="Taller">
+                    <h4 class="text-xl font-bold mb-3 text-white text-center">Tallers de Ciència</h4>
+                    <p class="text-slate-500 text-sm leading-relaxed text-center">Activitat al nostre local per aprendre física estelar i maneig de muntures equatorials.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tecnología -->
+    <section id="experiencia" class="py-24 bg-slate-900/20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div data-aos="fade-right">
+                    <h2 class="text-5xl font-black mb-8 leading-tight text-white">Tecnologia al <br> <span class="text-blue-500">Servei del Soci.</span></h2>
+                    <div class="space-y-4">
+                        <div onclick="openTechDetail('telescopis')" class="glass-premium p-6 rounded-2xl flex gap-6 items-center cursor-pointer group">
+                            <div class="w-14 h-14 rounded-xl bg-blue-600/20 flex items-center justify-center text-2xl">🔭</div>
+                            <div>
+                                <h4 class="font-bold text-white group-hover:text-blue-400 transition-colors">Equips de Gran Obertura</h4>
+                                <p class="text-slate-500 text-xs mt-1">Sistemes Ritchey-Chrétien de 300mm.</p>
+                            </div>
+                        </div>
+                        <div onclick="openTechDetail('estacio')" class="glass-premium p-6 rounded-2xl flex gap-6 items-center cursor-pointer group">
+                            <div class="w-14 h-14 rounded-xl bg-blue-600/20 flex items-center justify-center text-2xl">📡</div>
+                            <div>
+                                <h4 class="font-bold text-white group-hover:text-blue-400 transition-colors">Estació Sky-Cam 24/7</h4>
+                                <p class="text-slate-500 text-xs mt-1">Monitorització de nuls i "Seeing" en temps real.</p>
+                            </div>
+                        </div>
+                        <div onclick="openTechDetail('processat')" class="glass-premium p-6 rounded-2xl flex gap-6 items-center cursor-pointer group">
+                            <div class="w-14 h-14 rounded-xl bg-blue-600/20 flex items-center justify-center text-2xl">💻</div>
+                            <div>
+                                <h4 class="font-bold text-white group-hover:text-blue-400 transition-colors">Post-Processat Avançat</h4>
+                                <p class="text-slate-500 text-xs mt-1">Estacions de treball amb PixInsight i Photoshop.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="feature-image-wrapper h-[450px]" data-aos="zoom-in">
+                    <img src="https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=1200&q=80" class="w-full h-full object-cover brightness-50 rounded-[3rem]">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="px-8 py-3 glass-premium rounded-full text-blue-400 font-bold tracking-widest text-[10px] uppercase">Centre de Control UFO</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Membresía -->
+    <section id="membresia" class="py-24 bg-slate-900/30">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <h2 class="text-4xl font-black mb-4 text-white">Plans de Soci Professional</h2>
+            <p class="text-slate-500 mb-16 uppercase tracking-widest text-[10px] font-bold">Escull la teva experiència amb nosaltres</p>
+            <div class="grid md:grid-cols-2 gap-12">
+                <div class="glass-premium p-10 rounded-[3rem] flex flex-col items-center">
+                    <h3 class="text-blue-400 font-bold uppercase tracking-widest text-xs mb-4 text-center">Pla Mensual</h3>
+                    <div class="text-5xl font-black mb-8 text-white">5€<span class="text-sm text-slate-500 font-normal">/mes</span></div>
+                    <div class="space-y-4 mb-10 text-left w-full text-sm text-slate-400">
+                        <p class="flex items-center gap-2">✅ Accés a les sortides mensuals</p>
+                        <p class="flex items-center gap-2">✅ Ús del local i biblioteca</p>
+                        <p class="flex items-center gap-2">✅ Butlletí astronòmic digital</p>
+                    </div>
+                    <button onclick="openModal('personal-data-modal')" class="w-full py-5 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-500 mt-auto transition-all shadow-lg shadow-blue-600/20">Vull ser soci</button>
+                </div>
+                <div class="glass-premium p-10 rounded-[3rem] border-blue-500/50 bg-blue-600/5 flex flex-col items-center relative overflow-hidden">
+                    <div class="absolute top-8 -right-12 bg-blue-600 text-white text-[9px] font-black py-1 px-14 rotate-45">RECOMANAT</div>
+                    <h3 class="text-blue-400 font-bold uppercase tracking-widest text-xs mb-4 text-center">Pla Anual</h3>
+                    <div class="text-5xl font-black mb-8 text-white">40€<span class="text-sm text-slate-500 font-normal">/any</span></div>
+                    <div class="space-y-4 mb-10 text-left w-full text-sm text-slate-400">
+                        <p class="flex items-center gap-2 text-white font-medium italic">⭐ Estalvia 20€ respecte al mensual</p>
+                        <p class="flex items-center gap-2">✅ Préstec prioritari de telescopis</p>
+                        <p class="flex items-center gap-2">✅ Accés a la Sky-Cam remota</p>
+                        <p class="flex items-center gap-2">✅ Descomptes en marxandatge</p>
+                    </div>
+                    <button onclick="openModal('personal-data-modal')" class="w-full py-5 bg-blue-600 text-white rounded-2xl font-black hover:bg-blue-500 mt-auto shadow-xl shadow-blue-600/20 transition-all">Activar Pla Anual</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL INFORMACIÓ -->
+    <div id="info-modal" class="modal">
+        <div class="glass-premium p-10 md:p-14 rounded-[3rem] max-w-xl w-full text-center border-blue-500/40 relative">
+            <button onclick="closeModal('info-modal')" class="absolute top-6 right-8 text-slate-500 hover:text-white text-3xl">&times;</button>
+            <div class="w-16 h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6">📍</div>
+            <h3 class="text-3xl font-black mb-8 text-white uppercase tracking-tighter">Informació de Contacte</h3>
+            
+            <div class="space-y-6 text-left mb-10">
+                <div class="flex items-start gap-4">
+                    <div class="text-blue-400 mt-1">🗺️</div>
+                    <div>
+                        <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Ubicació</h4>
+                        <p class="text-white font-medium text-lg">Avinguda dels jocs olímpics, 11,<br>08840 Viladecans, Barcelona, Espanya</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-4">
+                    <div class="text-blue-400 mt-1">📞</div>
+                    <div>
+                        <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Telèfon</h4>
+                        <p class="text-white font-medium text-lg">685 89 03 67</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                    <div class="text-blue-400 mt-1">✉️</div>
+                    <div>
+                        <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Email</h4>
+                        <a href="mailto:info@ufoastronomy.com" class="text-blue-400 font-medium text-lg hover:underline transition-all">info@ufoastronomy.com</a>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN DE ENLACES EXTERNOS -->
+                <div class="pt-6 border-t border-white/5 space-y-4">
+                    <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Canals i Recursos</h4>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <a href="https://youtu.be/TwK_KLZue0Y" target="_blank" class="flex items-center gap-4 p-4 rounded-2xl bg-[#ff0000]/10 border border-[#ff0000]/20 hover:bg-[#ff0000]/20 transition-all group">
+                            <div class="w-10 h-10 bg-[#ff0000] rounded-xl flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 fill-white" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                            </div>
+                            <span class="text-white font-bold text-sm tracking-tight">YouTube</span>
+                        </a>
+
+                        <a href="https://www.canva.com/design/DAHE846-h38/JfQ3GiNjJMX7vNE_12TJDg/edit?utm_content=DAHE846-h38&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" target="_blank" class="flex items-center gap-4 p-4 rounded-2xl bg-[#00c4cc]/10 border border-[#00c4cc]/20 hover:bg-[#00c4cc]/20 transition-all group">
+                            <div class="w-10 h-10 bg-[#00c4cc] rounded-xl flex items-center justify-center text-white font-black text-xs italic flex-shrink-0">C</div>
+                            <span class="text-white font-bold text-sm tracking-tight">Canva Design</span>
+                        </a>
+
+                        <!-- ENLACE CORREGIDO Y VERIFICADO -->
+                        <a href="https://botiga-ufo-astronomy.onrender.com" target="_blank" rel="noopener noreferrer" class="sm:col-span-2 flex items-center gap-4 p-4 rounded-2xl bg-blue-600/10 border border-blue-600/20 hover:bg-blue-600/20 transition-all group">
+                            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <span class="text-white text-xl">🛒</span>
+                            </div>
+                            <span class="text-white font-bold text-sm tracking-tight">Botiga online</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 pt-8 border-t border-white/5">
+                <button onclick="closeModal('info-modal')" class="px-10 py-4 bg-white text-black font-black rounded-xl hover:bg-slate-100 transition-all">ENTÈS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TECNOLOGÍA -->
+    <div id="tech-modal" class="modal">
+        <div class="glass-premium p-10 rounded-[3rem] max-w-lg w-full text-center border-blue-500/40 relative">
+            <button onclick="closeModal('tech-modal')" class="absolute top-6 right-8 text-slate-500 hover:text-white text-3xl">&times;</button>
+            <div id="tech-icon" class="text-6xl mb-6">🔭</div>
+            <h3 id="tech-title" class="text-3xl font-black mb-4 text-white uppercase tracking-tighter">Títol Tech</h3>
+            <p id="tech-desc" class="text-slate-400 text-lg leading-relaxed mb-8">Descripció tecnològica...</p>
+            <button onclick="closeModal('tech-modal')" class="px-8 py-4 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-500 transition-all">TANCAR</button>
+        </div>
+    </div>
+
+    <!-- MODAL CALENDARI 2026 -->
+    <div id="calendar-modal" class="modal">
+        <div class="glass-premium p-8 rounded-[3rem] max-w-5xl w-full text-center relative border-blue-500/30">
+            <button onclick="closeModal('calendar-modal')" class="absolute top-6 right-8 text-slate-500 hover:text-white text-3xl">&times;</button>
+            <h3 class="text-3xl font-black mb-2 text-white">Calendari de Reserves 2026</h3>
+            <p class="text-slate-500 text-sm mb-10 tracking-wide uppercase font-bold text-center">Programació Anual</p>
+            
+            <div class="calendar-container">
+                <!-- MARZO 2026 -->
+                <div class="mb-12">
+                    <h4 class="text-center text-blue-400 font-bold mb-4">Març 2026</h4>
+                    <div class="calendar-grid mb-6">
+                        <div class="text-[9px] text-slate-600 font-black uppercase">Dll</div><div class="text-[9px] text-slate-600 font-black uppercase">Dmt</div><div class="text-[9px] text-slate-600 font-black uppercase">Dmc</div><div class="text-[9px] text-slate-600 font-black uppercase">Dj</div><div class="text-[9px] text-slate-600 font-black uppercase">Dv</div><div class="text-[9px] text-blue-400 font-black uppercase">Ds</div><div class="text-[9px] text-blue-400 font-black uppercase">Dg</div>
+                        <div class="calendar-day empty"></div><div class="calendar-day empty"></div><div class="calendar-day empty"></div><div class="calendar-day empty"></div><div class="calendar-day empty"></div><div class="calendar-day empty"></div>
+                        <div class="calendar-day" onclick="handleDayClick(1, 'Debat Astral')"><span class="num">1</span><span class="act">Debat</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(2, 'Oficina')"><span class="num">2</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(3, 'Oficina')"><span class="num">3</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(4, 'Oficina')"><span class="num">4</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(5, 'Taller Local')"><span class="num">5</span><span class="act">Taller</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(6, 'Observació')"><span class="num">6</span><span class="act">Obs.</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(7, 'Sortida Camp')"><span class="num">7</span><span class="act">Sortida</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(8, 'Fotografia')"><span class="num">8</span><span class="act">Foto</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(9, 'Oficina')"><span class="num">9</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(10, 'Oficina')"><span class="num">10</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(11, 'Oficina')"><span class="num">11</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(12, 'Curs Astro')"><span class="num">12</span><span class="act">Curs</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(13, 'Observació')"><span class="num">13</span><span class="act">Obs.</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(14, 'Sortida Camp')"><span class="num">14</span><span class="act">Sortida</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(15, 'Debat Astral')"><span class="num">15</span><span class="act">Debat</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(16, 'Oficina')"><span class="num">16</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(17, 'Oficina')"><span class="num">17</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(18, 'Oficina')"><span class="num">18</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(19, 'Taller Local')"><span class="num">19</span><span class="act">Taller</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(20, 'Observació')"><span class="num">20</span><span class="act">Obs.</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(21, 'Sortida Camp')"><span class="num">21</span><span class="act">Sortida</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(22, 'Fotografia')"><span class="num">22</span><span class="act">Foto</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(23, 'Oficina')"><span class="num">23</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(24, 'Oficina')"><span class="num">24</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(25, 'Oficina')"><span class="num">25</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(26, 'Curs Astro')"><span class="num">26</span><span class="act">Curs</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(27, 'Observació')"><span class="num">27</span><span class="act">Obs.</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(28, 'Sortida Camp')"><span class="num">28</span><span class="act">Sortida</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(29, 'Debat Astral')"><span class="num">29</span><span class="act">Debat</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(30, 'Oficina')"><span class="num">30</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(31, 'Oficina')"><span class="num">31</span><span class="act">Oficina</span></div>
+                    </div>
+                </div>
+
+                <!-- ABRIL 2026 -->
+                <div class="mb-12">
+                    <h4 class="text-center text-blue-400 font-bold mb-4">Abril 2026</h4>
+                    <div class="calendar-grid mb-6">
+                        <div class="text-[9px] text-slate-600 font-black uppercase">Dll</div><div class="text-[9px] text-slate-600 font-black uppercase">Dmt</div><div class="text-[9px] text-slate-600 font-black uppercase">Dmc</div><div class="text-[9px] text-slate-600 font-black uppercase">Dj</div><div class="text-[9px] text-slate-600 font-black uppercase">Dv</div><div class="text-[9px] text-blue-400 font-black uppercase">Ds</div><div class="text-[9px] text-blue-400 font-black uppercase">Dg</div>
+                        <div class="calendar-day empty"></div><div class="calendar-day empty"></div>
+                        <div class="calendar-day" onclick="handleDayClick(1, 'Oficina')"><span class="num">1</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(2, 'Taller Local')"><span class="num">2</span><span class="act">Taller</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(3, 'Observació')"><span class="num">3</span><span class="act">Obs.</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(4, 'Sortida Camp')"><span class="num">4</span><span class="act">Sortida</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(5, 'Debat Astral')"><span class="num">5</span><span class="act">Debat</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(6, 'Oficina')"><span class="num">6</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(7, 'Oficina')"><span class="num">7</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(8, 'Oficina')"><span class="num">8</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(9, 'Curs Astro')"><span class="num">9</span><span class="act">Curs</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(10, 'Observació')"><span class="num">10</span><span class="act">Obs.</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(11, 'Sortida Camp')"><span class="num">11</span><span class="act">Sortida</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(12, 'Fotografia')"><span class="num">12</span><span class="act">Foto</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(13, 'Oficina')"><span class="num">13</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(14, 'Oficina')"><span class="num">14</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(15, 'Oficina')"><span class="num">15</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(16, 'Taller Local')"><span class="num">16</span><span class="act">Taller</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(17, 'Observació')"><span class="num">17</span><span class="act">Obs.</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(18, 'Sortida Camp')"><span class="num">18</span><span class="act">Sortida</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(19, 'Debat Astral')"><span class="num">19</span><span class="act">Debat</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(20, 'Oficina')"><span class="num">20</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(21, 'Oficina')"><span class="num">21</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(22, 'Oficina')"><span class="num">22</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(23, 'Curs Astro')"><span class="num">23</span><span class="act">Curs</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(24, 'Observació')"><span class="num">24</span><span class="act">Obs.</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(25, 'Sortida Camp')"><span class="num">25</span><span class="act">Sortida</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(26, 'Fotografia')"><span class="num">26</span><span class="act">Foto</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(27, 'Oficina')"><span class="num">27</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(28, 'Oficina')"><span class="num">28</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(29, 'Oficina')"><span class="num">29</span><span class="act">Oficina</span></div>
+                        <div class="calendar-day" onclick="handleDayClick(30, 'Taller Local')"><span class="num">30</span><span class="act">Taller</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalle Actividad -->
+    <div id="activity-detail-modal" class="modal">
+        <div class="glass-premium p-10 md:p-16 rounded-[3.5rem] max-w-2xl w-full text-center border-blue-500/50 shadow-2xl relative">
+            <button onclick="closeModal('activity-detail-modal')" class="absolute top-8 right-10 text-slate-500 hover:text-white text-3xl">&times;</button>
+            <div class="mb-12">
+                <span id="activity-tag" class="text-[10px] font-black tracking-[0.3em] text-blue-500 uppercase mb-4 block">Detalls de l'Activitat</span>
+                <h3 id="activity-title" class="text-4xl md:text-5xl font-black mb-8 text-white uppercase tracking-tighter text-center w-full leading-tight">Nom Activitat</h3>
+                <div class="w-20 h-1 bg-blue-600 mx-auto mb-10 rounded-full opacity-50"></div>
+                <p id="activity-desc" class="text-slate-300 text-lg md:text-xl leading-relaxed mb-6 font-medium text-center max-w-lg mx-auto">Descripció detallada de l'activitat...</p>
+            </div>
+            <div class="flex flex-col gap-4">
+                <button onclick="goToPersonalData()" class="w-full py-6 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-500 transition-all shadow-xl text-xl hover:scale-[1.02] active:scale-95">RESERVAR PLAÇA ARA</button>
+                <button onclick="closeModal('activity-detail-modal')" class="text-slate-500 mt-4 text-[10px] uppercase font-black hover:text-white tracking-widest transition-colors">Torna al calendari</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Datos Personales -->
+    <div id="personal-data-modal" class="modal">
+        <div class="glass-premium p-10 rounded-[3rem] max-w-md w-full border-blue-500 shadow-2xl text-center relative">
+            <button onclick="closeModal('personal-data-modal')" class="absolute top-6 right-8 text-slate-500 hover:text-white text-3xl">&times;</button>
+            <h3 class="text-3xl font-black mb-8 text-white text-center">Informació del Soci</h3>
+            <div class="space-y-5 text-left mb-10">
+                <div>
+                    <label class="text-[10px] uppercase font-black text-slate-500 ml-2 mb-2 block">Nom i Cognoms</label>
+                    <input type="text" placeholder="Joan Garcia">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-black text-slate-500 ml-2 mb-2 block">Correu Electrònic</label>
+                    <input type="email" placeholder="joan@exemple.cat">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-black text-slate-500 ml-2 mb-2 block">Telèfon</label>
+                    <input type="tel" placeholder="+34 600 000 000">
+                </div>
+            </div>
+            <button class="w-full py-5 bg-blue-600 text-white rounded-2xl font-black hover:bg-blue-500 transition-all shadow-lg" onclick="submitFinalBooking()">CONFIRMAR RESERVA</button>
+        </div>
+    </div>
+
+    <!-- Modal Success -->
+    <div id="final-success-modal" class="modal">
+        <div class="glass-premium p-12 rounded-[3rem] max-sm w-full text-center border-blue-500 shadow-2xl">
+            <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-blue-600/40">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h3 class="text-2xl font-black mb-4 text-white text-center">Reserva Confirmada!</h3>
+            <p class="text-slate-400 text-sm mb-10 text-center">S'ha generat el teu codi de reserva per al 2026. T'esperem!</p>
+            <button onclick="closeAllAndReset()" class="w-full py-5 bg-white text-black font-black rounded-2xl hover:bg-slate-100 transition-all">TANCAR</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-16 bg-slate-950 border-t border-white/5 text-center">
+        <p class="text-slate-600 text-[10px] font-black uppercase tracking-[0.4em] mb-6 text-center">&copy; 2026 UFO Astronomy Viladecans</p>
+        <div class="flex justify-center items-center">
+             <button onclick="toggleCookiesBanner()" class="glass-premium px-6 py-2 rounded-full text-slate-500 text-[9px] uppercase font-bold hover:text-white hover:border-blue-500/50 transition-all tracking-widest">
+                Cookies i Privacitat
+             </button>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ once: false, duration: 1000, offset: 100 });
+
+        const activitiesInfo = {
+            'Taller Local': { desc: 'Taller presencial al nostre local de Viladecans per aprendre el funcionament del programari de processat d’imatges astronòmiques i maneig de dades científiques.' },
+            'Oficina': { desc: 'Horari d’atenció al soci per a consultes tècniques, préstec de material especialitzat i gestió administrativa de noves altes.' },
+            'Debat Astral': { desc: 'Sessió de debat oberta on analitzem les darreres troballes de l’ESA/NASA i aprofundim en teories de cosmologia moderna.' },
+            'Curs Astro': { desc: 'Mòdul teòric formatiu enfocat a l’astronomia de posició, astrofísica estel·lar i fonaments del cel profund.' },
+            'Observació': { desc: 'Sessió pràctica de monitorització del firmament utilitzant els telescopis fixos de l’observatori. Ideal per a l’estudi de planetes i la Lluna.' },
+            'Sortida Camp': { desc: 'Expedició a zones de baixa contaminació lumínica per a l’observació d’objectes Messier i captació de dades de cel profund.' },
+            'Fotografia': { desc: 'Sessió tècnica dedicada a l’astrofotografia de gran camp i cel profund, utilitzant càmeres CCD/CMOS refrigerades i sistemes de guiat.' }
+        };
+
+        function acceptCookies() {
+            const banner = document.getElementById('cookie-banner');
+            banner.style.opacity = '0';
+            banner.style.pointerEvents = 'none';
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        function toggleCookiesBanner() {
+            const banner = document.getElementById('cookie-banner');
+            banner.style.opacity = '1';
+            banner.style.pointerEvents = 'auto';
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function openModal(id) {
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.remove('active');
+                if(document.getElementById('cookie-banner').style.opacity === '0') {
+                    document.body.style.overflow = 'auto';
+                }
+            }
+        }
+
+        function handleDayClick(day, activity) {
+            const data = activitiesInfo[activity];
+            if(data) {
+                const modalTitle = document.getElementById('activity-title');
+                const modalDesc = document.getElementById('activity-desc');
+                if(modalTitle && modalDesc) {
+                    modalTitle.innerText = activity;
+                    modalDesc.innerText = data.desc;
+                    closeModal('calendar-modal');
+                    setTimeout(() => openModal('activity-detail-modal'), 350);
+                }
+            }
+        }
+
+        function goToPersonalData() {
+            closeModal('activity-detail-modal');
+            setTimeout(() => openModal('personal-data-modal'), 350);
+        }
+
+        function submitFinalBooking() {
+            closeModal('personal-data-modal');
+            setTimeout(() => openModal('final-success-modal'), 350);
+        }
+
+        function closeAllAndReset() {
+            closeModal('final-success-modal');
+        }
+
+        function openTechDetail(type) {
+            const modal = document.getElementById('tech-modal');
+            const title = document.getElementById('tech-title');
+            const desc = document.getElementById('tech-desc');
+            const icon = document.getElementById('tech-icon');
+            if(!modal || !title || !desc || !icon) return;
+            if(type === 'telescopis') {
+                icon.innerText = '🔭';
+                title.innerText = "Telescopis de Gran Obertura";
+                desc.innerText = "Sistemes Ritchey-Chrétien i Newton de fins a 300mm per a una nitidesa professional en planetària i cel profund.";
+            } else if(type === 'estacio') {
+                icon.innerText = '📡';
+                title.innerText = "Estació Meteorològica";
+                desc.innerText = "Monitorització de la qualitat del cel (SQM), nivell de nuls i humitat per decidir las nits d'obertura del domo.";
+            } else if(type === 'processat') {
+                icon.innerText = '💻';
+                title.innerText = "Post-Processat Avançat";
+                desc.innerText = "Laboratori equipat amb les millors enviines digitals (PixInsight, Photoshop) per donar vida a les dades capturades.";
+            }
+            openModal('tech-modal');
+        }
+    </script>
+</body>
+</html>
